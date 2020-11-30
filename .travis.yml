@@ -5,8 +5,17 @@ language: go
 go:
 - 1.13.x
 
+service:
+- docker
+
 script:   
 # Test the code
 - go test -v ./...
 # Build the code 
 - CGO_ENABLED=0 GOARCH=amd64 go build -o demo
+- echo "$REGISTRY_PASSWORD" | docker login --username $REGISTRY_USER --password-stdin
+- docker build -f Dockerfile -t 1426270/demo:latest ./
+- GIT_SHA="$(git rev-parse --short HEAD)"
+- docker tag 1426270/demo:latest 1426270/demo:$GIT_SHA
+- docker push 1426270/demo:latest
+- docker push 1426270/demo:$GIT_SHA
